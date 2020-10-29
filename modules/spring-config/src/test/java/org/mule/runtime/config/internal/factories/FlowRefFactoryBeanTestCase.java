@@ -57,6 +57,7 @@ import org.mule.runtime.api.lifecycle.Stoppable;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.app.declaration.api.ArtifactDeclaration;
+import org.mule.runtime.config.internal.DefaultComponentBuildingDefinitionRegistryFactory;
 import org.mule.runtime.config.internal.MuleArtifactContext;
 import org.mule.runtime.config.internal.ObjectProviderAwareBeanFactory;
 import org.mule.runtime.config.internal.OptionalObjectsController;
@@ -408,8 +409,8 @@ public class FlowRefFactoryBeanTestCase extends AbstractMuleTestCase {
   private MuleArtifactContext createMuleArtifactContextStub(DefaultListableBeanFactory mockedBeanFactory) {
     MuleArtifactContext muleArtifactContext =
         new MuleArtifactContext(mockMuleContext, new ConfigResource[0], new ArtifactDeclaration(),
-                                mock(OptionalObjectsController.class), new HashMap<>(), ArtifactType.APP, new ArrayList<>(),
-                                Optional.empty(), true) {
+                                mock(OptionalObjectsController.class), Optional.empty(), new HashMap<>(), ArtifactType.APP, true,
+                                new DefaultComponentBuildingDefinitionRegistryFactory(new ArrayList<>())) {
 
           @Override
           protected DefaultListableBeanFactory createBeanFactory() {

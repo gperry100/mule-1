@@ -9,12 +9,13 @@ package org.mule.runtime.config.internal;
 import static java.util.Collections.emptyMap;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.ArrayUtils.isEmpty;
 import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.APP;
 import static org.mule.runtime.core.api.config.bootstrap.ArtifactType.DOMAIN;
 import static org.mule.runtime.core.internal.config.RuntimeLockFactoryUtil.getRuntimeLockFactory;
-import static org.mule.runtime.deployment.model.internal.application.MuleApplicationClassLoader.resolveContextArtifactPluginClassLoaders;
+
 import org.mule.runtime.api.component.ConfigurationProperties;
 import org.mule.runtime.api.lifecycle.Startable;
 import org.mule.runtime.api.lock.LockFactory;
@@ -47,6 +48,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  * <code>SpringXmlConfigurationBuilder</code> enables Mule to be configured from a Spring XML Configuration file used with Mule
  * name-spaces. Multiple configuration files can be loaded from this builder (specified as a comma-separated list).
  */
+// TODO: Revisar todos los constructores
 public class SpringXmlConfigurationBuilder extends AbstractResourceConfigurationBuilder
     implements ParentMuleContextAwareConfigurationBuilder {
 
@@ -60,23 +62,33 @@ public class SpringXmlConfigurationBuilder extends AbstractResourceConfiguration
   private MuleArtifactContext muleArtifactContext;
   private final ArtifactType artifactType;
   private final LockFactory runtimeLockFactory;
+  private Optional<ComponentBuildingDefinitionRegistryFactory> componentBuildingDefinitionRegistryFactory = empty();
 
   public SpringXmlConfigurationBuilder(String[] configResources, Map<String, String> artifactProperties,
                                        ArtifactType artifactType, boolean enableLazyInit, boolean disableXmlValidations,
-                                       LockFactory runtimeLockFactory)
+                                       LockFactory runtimeLockFactory,
+                                       ComponentBuildingDefinitionRegistryFactory componentBuildingDefinitionRegistryFactory)
       throws ConfigurationException {
     super(configResources, artifactProperties);
     this.artifactType = artifactType;
     this.enableLazyInit = enableLazyInit;
     this.disableXmlValidations = disableXmlValidations;
     this.runtimeLockFactory = runtimeLockFactory;
+    this.componentBuildingDefinitionRegistryFactory = ofNullable(componentBuildingDefinitionRegistryFactory);
   }
 
   public SpringXmlConfigurationBuilder(String[] configResources, Map<String, String> artifactProperties,
                                        ArtifactType artifactType, boolean enableLazyInit, boolean disableXmlValidations)
       throws ConfigurationException {
+    this(configResources, artifactProperties, artifactType, enableLazyInit, disableXmlValidations, null);
+  }
+
+  public SpringXmlConfigurationBuilder(String[] configResources, Map<String, String> artifactProperties,
+                                       ArtifactType artifactType, boolean enableLazyInit, boolean disableXmlValidations,
+                                       ComponentBuildingDefinitionRegistryFactory componentBuildingDefinitionRegistryFactory)
+      throws ConfigurationException {
     this(configResources, artifactProperties, artifactType, enableLazyInit, disableXmlValidations,
-         getRuntimeLockFactory());
+         getRuntimeLockFactory(), componentBuildingDefinitionRegistryFactory);
   }
 
   public SpringXmlConfigurationBuilder(String configResources, Map<String, String> artifactProperties, ArtifactType artifactType)
@@ -112,8 +124,18 @@ public class SpringXmlConfigurationBuilder extends AbstractResourceConfiguration
                                        boolean enableLazyInitialisation, boolean disableXmlValidations,
                                        LockFactory runtimeLockFactory)
       throws ConfigurationException {
+    this(configurationFiles, artifactDeclaration, artifactProperties, artifactType, enableLazyInitialisation,
+         disableXmlValidations, runtimeLockFactory, null);
+  }
+
+  public SpringXmlConfigurationBuilder(String[] configurationFiles, ArtifactDeclaration artifactDeclaration,
+                                       Map<String, String> artifactProperties, ArtifactType artifactType,
+                                       boolean enableLazyInitialisation, boolean disableXmlValidations,
+                                       LockFactory runtimeLockFactory,
+                                       ComponentBuildingDefinitionRegistryFactory componentBuildingDefinitionRegistryFactory)
+      throws ConfigurationException {
     this(configurationFiles, artifactProperties, artifactType, enableLazyInitialisation, disableXmlValidations,
-         runtimeLockFactory);
+         runtimeLockFactory, componentBuildingDefinitionRegistryFactory);
     this.artifactDeclaration = artifactDeclaration;
   }
 
@@ -170,19 +192,26 @@ public class SpringXmlConfigurationBuilder extends AbstractResourceConfiguration
                                                          OptionalObjectsController optionalObjectsController) {
     MuleArtifactContext muleArtifactContext;
 
+    ComponentBuildingDefinitionRegistryFactory componentBuildingDefinitionRegistryFactory =
+        this.componentBuildingDefinitionRegistryFactory
+            .orElse(new DefaultComponentBuildingDefinitionRegistryFactory());
+
     if (enableLazyInit) {
       muleArtifactContext = new LazyMuleArtifactContext(muleContext, resolveArtifactConfigResources(), artifactDeclaration,
                                                         optionalObjectsController,
                                                         getArtifactProperties(), artifactType,
-                                                        resolveContextArtifactPluginClassLoaders(),
                                                         resolveComponentModelInitializer(),
                                                         resolveParentConfigurationProperties(), disableXmlValidations,
-                                                        runtimeLockFactory);
+                                                        runtimeLockFactory,
+                                                        componentBuildingDefinitionRegistryFactory);
     } else {
       muleArtifactContext =
-          new MuleArtifactContext(muleContext, resolveArtifactConfigResources(), artifactDeclaration, optionalObjectsController,
-                                  getArtifactProperties(), artifactType, resolveContextArtifactPluginClassLoaders(),
-                                  resolveParentConfigurationProperties(), disableXmlValidations);
+          new MuleArtifactContext(muleContext, resolveArtifactConfigResources(), artifactDeclaration,
+                                  optionalObjectsController,
+                                  resolveParentConfigurationProperties(),
+                                  getArtifactProperties(), artifactType,
+                                  disableXmlValidations,
+                                  componentBuildingDefinitionRegistryFactory);
       muleArtifactContext.initialize();
     }
 

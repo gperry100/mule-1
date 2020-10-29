@@ -17,6 +17,9 @@ import org.mule.functional.api.flow.FlowRunner;
 import org.mule.runtime.api.artifact.Registry;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.app.declaration.api.ArtifactDeclaration;
+import org.mule.runtime.config.internal.ComponentBuildingDefinitionRegistryFactory;
+import org.mule.runtime.config.internal.DefaultComponentBuildingDefinitionRegistryFactory;
+import org.mule.runtime.config.internal.SpringXmlConfigurationBuilder;
 import org.mule.runtime.container.internal.ContainerClassLoaderFactory;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.config.ConfigurationBuilder;
@@ -92,6 +95,9 @@ public abstract class FunctionalTestCase extends AbstractMuleContextTestCase {
       return createConfigurationBuilder(artifactDeclaration);
     }
 
+    ComponentBuildingDefinitionRegistryFactory componentBuildingDefinitionRegistryFactory =
+        new DefaultComponentBuildingDefinitionRegistryFactory();
+
     String configResources = getConfigResources();
     if (configResources != null) {
       return createConfigurationBuilder(configResources, emptyMap(), APP, enableLazyInit(), disableXmlValidations());
@@ -101,7 +107,9 @@ public abstract class FunctionalTestCase extends AbstractMuleContextTestCase {
       if (configResources.contains(",")) {
         throw new RuntimeException("Do not use this method when the config is composed of several files. Use getConfigFiles method instead.");
       }
-      return createConfigurationBuilder(configResources, artifactProperties(), APP, enableLazyInit(), disableXmlValidations());
+      return new SpringXmlConfigurationBuilder(new String[] {configResources}, artifactProperties(), APP, enableLazyInit(),
+                                               disableXmlValidations(),
+                                               componentBuildingDefinitionRegistryFactory);
     }
     return createConfigurationBuilder(getConfigFiles(), artifactProperties(), APP, enableLazyInit(), disableXmlValidations());
   }

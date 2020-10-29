@@ -121,6 +121,8 @@ public class ArtifactContextBuilder {
   private Optional<Properties> properties = empty();
   private String dataFolderName;
   private LockFactory runtimeLockFactory;
+  // TODO: This should not be an object
+  private Object componentBuildingDefinitionRegistryFactory = null;
 
   private ArtifactContextBuilder() {}
 
@@ -374,6 +376,16 @@ public class ArtifactContextBuilder {
     return this;
   }
 
+  /**
+   * 
+   * @param componentBuildingDefinitionRegistryFactory
+   * @return
+   */
+  public ArtifactContextBuilder setComponentBuildingDefinitionRegistryFactory(Object componentBuildingDefinitionRegistryFactory) {
+    this.componentBuildingDefinitionRegistryFactory = componentBuildingDefinitionRegistryFactory;
+    return this;
+  }
+
   private Map<String, String> merge(Map<String, String> properties, Properties deploymentProperties) {
     if (deploymentProperties == null) {
       return properties;
@@ -449,7 +461,8 @@ public class ArtifactContextBuilder {
                     .setEnableLazyInitialization(enableLazyInit)
                     .setDisableXmlValidations(disableXmlValidations)
                     .setServiceConfigurators(serviceConfigurators)
-                    .setRuntimeLockFactory(runtimeLockFactory);
+                    .setRuntimeLockFactory(runtimeLockFactory)
+                    .setComponentBuildingDefinitionRegistryFactory(componentBuildingDefinitionRegistryFactory);
 
             withArtifactMuleContext(parentArtifact, artifactContextConfigurationBuilder::setParentContext);
             artifactContext

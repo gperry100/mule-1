@@ -144,14 +144,14 @@ public class LazyMuleArtifactContext extends MuleArtifactContext
   public LazyMuleArtifactContext(MuleContext muleContext, ConfigResource[] artifactConfigResources,
                                  ArtifactDeclaration artifactDeclaration, OptionalObjectsController optionalObjectsController,
                                  Map<String, String> artifactProperties, ArtifactType artifactType,
-                                 List<ClassLoader> pluginsClassLoaders,
                                  Optional<ComponentModelInitializer> parentComponentModelInitializer,
                                  Optional<ConfigurationProperties> parentConfigurationProperties, boolean disableXmlValidations,
-                                 LockFactory runtimeLockFactory)
+                                 LockFactory runtimeLockFactory,
+                                 ComponentBuildingDefinitionRegistryFactory componentBuildingDefinitionRegistryFactory)
       throws BeansException {
-    super(muleContext, artifactConfigResources, artifactDeclaration, optionalObjectsController,
-          extendArtifactProperties(artifactProperties), artifactType, pluginsClassLoaders, parentConfigurationProperties,
-          disableXmlValidations);
+    super(muleContext, artifactConfigResources, artifactDeclaration, optionalObjectsController, parentConfigurationProperties,
+          extendArtifactProperties(artifactProperties),
+          artifactType, disableXmlValidations, componentBuildingDefinitionRegistryFactory);
 
     // Changes the component locator in order to allow accessing any component by location even when they are prototype
     this.componentLocator = new SpringConfigurationComponentLocator();

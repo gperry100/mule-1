@@ -42,6 +42,8 @@ public final class ArtifactContextConfiguration {
   private Optional<MuleContext> parentContext = empty();
   private ComponentBuildingDefinitionProvider runtimeComponentBuildingDefinitionProvider;
   private LockFactory runtimeLockFactory;
+  // TODO: ML This should be an ComponentBuildingDefinitionRegistryFactory instance
+  private Object componentBuildingDefinitionRegistryFactory;
 
   private ArtifactContextConfiguration() {}
 
@@ -120,6 +122,14 @@ public final class ArtifactContextConfiguration {
    */
   public Optional<MuleContext> getParentContext() {
     return parentContext;
+  }
+
+  /**
+   * 
+   * @return
+   */
+  public Object getComponentBuildingDefinitionRegistryFactory() {
+    return componentBuildingDefinitionRegistryFactory;
   }
 
   /**
@@ -249,6 +259,15 @@ public final class ArtifactContextConfiguration {
      */
     public ArtifactContextConfigurationBuilder setRuntimeLockFactory(LockFactory runtimeLockFactory) {
       artifactContextConfiguration.runtimeLockFactory = runtimeLockFactory;
+      return this;
+    }
+
+    /**
+     * @param runtimeLockFactory {@link LockFactory} for the runtime that can be shared along deployable artifacts to synchronize access on different deployable artifacts to the same resources.
+     * @return the builder
+     */
+    public ArtifactContextConfigurationBuilder setComponentBuildingDefinitionRegistryFactory(Object componentBuildingDefinitionRegistryFactory) {
+      artifactContextConfiguration.componentBuildingDefinitionRegistryFactory = componentBuildingDefinitionRegistryFactory;
       return this;
     }
 
