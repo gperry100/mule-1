@@ -42,6 +42,7 @@ import org.mule.runtime.core.api.construct.Flow;
 import org.mule.runtime.extension.api.runtime.config.ConfigurationState;
 import org.mule.runtime.extension.api.runtime.config.ConfiguredComponent;
 import org.mule.runtime.extension.api.runtime.source.ParameterizedSource;
+import org.mule.tck.junit4.FlakyTest;
 import org.mule.test.heisenberg.extension.HeisenbergSource;
 import org.mule.test.module.extension.AbstractExtensionFunctionalTestCase;
 
@@ -134,7 +135,7 @@ public class HeisenbergMessageSourceTestCase extends AbstractExtensionFunctional
   }
 
   @Test
-  @Ignore("MULE-18915")
+  @FlakyTest(times = 500)
   public void reconnectWithEnrichedException() throws Exception {
     startFlow("sourceFailedOnRuntime");
     probe(TIMEOUT_MILLIS, POLL_DELAY_MILLIS, () -> sourceTimesStarted > 2);
