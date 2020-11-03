@@ -14,6 +14,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.asm.tree.InsnList.check;
 import static org.mule.functional.junit4.matchers.MessageMatchers.hasPayload;
 import static org.mule.runtime.api.exception.MuleException.INFO_LOCATION_KEY;
 import static org.mule.runtime.api.exception.MuleException.INFO_SOURCE_XML_KEY;
@@ -22,6 +24,7 @@ import static org.mule.runtime.core.api.exception.Errors.ComponentIdentifiers.Ha
 import static org.mule.runtime.core.api.rx.Exceptions.unwrap;
 import static org.mule.tck.junit4.matcher.ErrorTypeMatcher.errorType;
 import static org.mule.tck.junit4.matcher.IsEmptyOptional.empty;
+import static org.mule.tck.probe.PollingProber.check;
 import static org.mule.tck.probe.PollingProber.probe;
 import static org.mule.test.heisenberg.extension.HeisenbergConnectionProvider.SAUL_OFFICE_NUMBER;
 import static org.mule.test.heisenberg.extension.HeisenbergExtension.sourceTimesStarted;
@@ -297,6 +300,7 @@ public class HeisenbergMessageSourceTestCase extends AbstractExtensionFunctional
   protected void startFlow(String flowName) throws Exception {
     flow = (Flow) getFlowConstruct(flowName);
     flow.start();
+    check(TIMEOUT_MILLIS, POLL_DELAY_MILLIS, () -> flow.getMuleContext().isStarted());
   }
 
   private boolean assertState(boolean executedOnSuccess, boolean executedOnError, boolean executedOnTerminate) {
