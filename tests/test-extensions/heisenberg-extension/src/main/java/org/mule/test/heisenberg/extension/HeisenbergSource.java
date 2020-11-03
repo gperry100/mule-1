@@ -236,7 +236,7 @@ public class HeisenbergSource extends Source<String, Object> {
 
   @Override
   public void onStop() {
-    if (executor != null) {
+    if (executor != null && scheduledFuture != null) {
       scheduledFuture.cancel(true);
       executor.stop();
     }
